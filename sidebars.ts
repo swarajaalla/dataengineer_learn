@@ -1,29 +1,51 @@
-import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
+import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 
-// This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
-
-/**
- * Creating a sidebar enables you to:
- - create an ordered group of docs
- - render a sidebar for each doc of that group
- - provide next/previous navigation
-
- The sidebars can be generated from the filesystem, or explicitly defined here.
-
- Create as many sidebars as you want.
- */
 const sidebars: SidebarsConfig = {
-  // But you can create a sidebar manually
   tutorialSidebar: [
     'intro',
-    'fundamentals',
-    'sql',
-    'python',
-    'spark',
-    'cloud',
-    'projects',
-  ],
 
+    {
+      type: 'category',
+      label: 'Phase 0: Mindset & Setup',
+      items: ['mindset', 'setup'],
+    },
+
+    {
+      type: 'category',
+      label: 'Phase 1: Core Foundations',
+      items: ['fundamentals', 'sql', 'python'],
+    },
+
+    {
+      type: 'category',
+      label: 'Phase 2: Data Engineering Core',
+      items: ['etl', 'data-modeling', 'batch-vs-streaming'],
+    },
+
+    {
+      type: 'category',
+      label: 'Phase 3: Big Data & Processing',
+      items: ['spark', 'delta-lake'],
+    },
+
+    {
+      type: 'category',
+      label: 'Phase 4: Cloud & Production',
+      items: ['cloud', 'orchestration', 'ci-cd'],
+    },
+
+    {
+      type: 'category',
+      label: 'Phase 5: Real Projects',
+      items: ['projects', 'case-study'],
+    },
+
+    {
+      type: 'category',
+      label: 'Phase 6: Interviews & Jobs',
+      items: ['interview-prep', 'resume', 'system-design'],
+    },
+  ],
 };
 
 export default sidebars;
