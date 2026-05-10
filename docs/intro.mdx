@@ -1,11 +1,124 @@
+---
+sidebar_position: 1
+---
+
 # Data Engineering Roadmap
 
-This roadmap is designed for beginners and career switchers.
+A practical, phase-by-phase guide to becoming a production-ready data engineer. No fluff — only what matters in real jobs.
 
-## Phases
-- Fundamentals
-- SQL
-- Python
-- Big Data (Spark)
-- Cloud
-- Projects
+---
+
+## Who This Is For
+
+- Beginners entering the data field from scratch
+- Developers switching from software engineering or analytics
+- Engineers who've done tutorials but can't apply knowledge to real projects
+
+---
+
+## The Full Learning Path
+
+### Phase 0 — Mindset & Setup
+**Goal:** Understand how to approach data engineering and set up your environment.
+
+| Topic | What to Learn |
+|-------|--------------|
+| Mindset | Think in pipelines, not scripts |
+| Setup | VS Code, Python, Git, Azure CLI, Databricks CLI |
+
+---
+
+### Phase 1 — Core Foundations
+**Goal:** Build skills every data engineer uses daily.
+
+| Topic | What to Learn |
+|-------|--------------|
+| Fundamentals | Data pipelines, warehouse vs lake, formats (Parquet, JSON, CSV) |
+| SQL | Window functions, CTEs, query optimization, anti-joins |
+| Python | Pandas, file handling, error handling, scripting for pipelines |
+
+---
+
+### Phase 2 — Data Engineering Core
+**Goal:** Learn how pipelines are designed and built.
+
+| Topic | What to Learn |
+|-------|--------------|
+| ETL / ELT | Patterns, incremental loads, SCD types, idempotency |
+| Data Modeling | Star schema, Data Vault, medallion architecture |
+| Batch vs Streaming | When to use which, micro-batch, watermarks |
+
+---
+
+### Phase 3 — Big Data & Processing
+**Goal:** Handle large-scale data processing.
+
+| Topic | What to Learn |
+|-------|--------------|
+| Apache Spark | DataFrames, transformations, partitioning, optimization |
+| Delta Lake | ACID transactions, time travel, schema evolution, MERGE |
+
+---
+
+### Phase 4 — Cloud & Production
+**Goal:** Deploy and operate pipelines in cloud environments.
+
+| Topic | What to Learn |
+|-------|--------------|
+| Cloud Platforms | Azure (primary), AWS, GCP — storage, compute, networking |
+| Orchestration | Azure Data Factory, Apache Airflow, Databricks Workflows |
+| CI/CD | Git branching, automated testing, deployment pipelines |
+
+---
+
+### Phase 5 — Real Projects
+**Goal:** Apply everything to production-level scenarios.
+
+| Topic | What to Learn |
+|-------|--------------|
+| Projects | End-to-end pipeline builds with real datasets |
+| Case Studies | SAP → Databricks migration, DQX data quality framework |
+
+---
+
+### Phase 6 — Interviews & Jobs
+**Goal:** Land a data engineering role.
+
+| Topic | What to Learn |
+|-------|--------------|
+| Interview Prep | SQL challenges, PySpark questions, scenario-based answers |
+| Resume | How to frame data engineering experience |
+| System Design | Design a pipeline, data lake, or streaming system |
+
+---
+
+## Tools You'll Work With
+
+**Processing:** Spark, Databricks, dbt  
+**Storage:** Delta Lake, ADLS, S3, Snowflake  
+**Orchestration:** ADF, Airflow, Databricks Workflows  
+**Cloud:** Azure (primary), AWS, GCP  
+**Visualization:** Power BI, Tableau, Looker  
+
+→ See the full [Tools & Technologies](./tools) reference page.  
+→ See the [Cloud Platforms](./cloud-platforms) breakdown by provider.
+
+---
+
+## Recommended Learning Order
+
+```
+SQL → Python → Fundamentals → ETL → Spark → Delta Lake → Cloud → Projects → Interview Prep
+```
+
+Don't skip SQL. Even in Spark and Databricks, SQL is used constantly.
+
+---
+
+## Start Here
+
+Pick your entry point:
+
+- **Zero experience** → Start at [Phase 0: Mindset](./phase-0-mindset/what-is-data-engineering)
+- **Know Python/SQL** → Start at [Phase 2: Data Engineering Core](./phase-2-data-engineering-core/intro)
+- **Want a job ASAP** → Start at [Interview Prep](./phase-8-interviews-career/interview-prep/sql-questions) + [Certifications](./phase-8-interviews-career/certifications/databricks-associate)

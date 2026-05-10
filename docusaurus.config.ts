@@ -75,19 +75,37 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'Data engineer Learn',
+      title: 'DE Learn',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'Data Engineering Learn',
         src: 'img/logo.svg',
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
+          to: '/docs/intro',
+          label: 'Roadmap',
           position: 'left',
-          label: 'Tutorial',
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
+        {
+          to: '/docs/tools',
+          label: 'Tools',
+          position: 'left',
+        },
+        {
+          to: '/docs/cloud-platforms',
+          label: 'Cloud',
+          position: 'left',
+        },
+        {
+          to: '/docs/phase-7-real-projects/case-studies/sap-databricks-migration',
+          label: 'Case Studies',
+          position: 'left',
+        },
+        {
+          to: '/docs/phase-8-interviews-career/interview-prep/sql-questions',
+          label: 'Interview Prep',
+          position: 'left',
+        },
         {
           href: 'https://github.com/swarajaalla/dataengineer_learn.git',
           label: 'GitHub',
@@ -99,38 +117,24 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'Learn',
           items: [
-            {
-              label: 'Tutorial',
-              to: '/docs/intro',
-            },
+            { label: 'Roadmap', to: '/docs/intro' },
+            { label: 'Tools & Technologies', to: '/docs/tools' },
+            { label: 'Cloud Platforms', to: '/docs/cloud-platforms' },
           ],
         },
         {
-          title: 'Community',
+          title: 'Deep Dives',
           items: [
-            {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-            },
-            {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
-            {
-              label: 'X',
-              href: 'https://x.com/docusaurus',
-            },
+            { label: 'Case Studies', to: '/docs/phase-7-real-projects/case-studies/sap-databricks-migration' },
+            { label: 'Interview Prep', to: '/docs/phase-8-interviews-career/interview-prep/sql-questions' },
+            { label: 'System Design', to: '/docs/phase-8-interviews-career/interview-prep/spark-questions' },
           ],
         },
         {
           title: 'More',
           items: [
-            {
-              label: 'Blog',
-              to: '/blog',
-            },
             {
               label: 'GitHub',
               href: 'https://github.com/swarajaalla/dataengineer_learn.git',
@@ -138,7 +142,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Data Engineering Learn. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
