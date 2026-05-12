@@ -1,41 +1,258 @@
 ---
-sidebar_position: 4
+sidebar_position: 3
 ---
 
-# Managed Identity & Security in Azure
+# Managed Identity, RBAC & Security Controls in Azure
 
-Managed Identity is the correct way to authenticate between Azure services. It eliminates service principal secrets from your code and config files.
+Security is one of the most critical parts of Azure Data Engineering.
+
+Modern Azure architectures should:
+- Avoid hardcoded secrets
+- Avoid public access
+- Use identity-based authentication
+- Follow least privilege access
+- Centralize secrets securely
+- Enable auditing and governance
+
+Core Azure security building blocks:
+- Managed Identity
+- RBAC
+- Azure Key Vault
+- Private Endpoints
+- Unity Catalog
+- Encryption
+- Network Isolation
 
 ---
 
-## What Is Managed Identity?
+# Why Security Matters in Data Engineering
 
-Azure automatically creates and rotates a service identity for your resource. You assign RBAC roles to that identity — no passwords, no secrets, no rotation scripts.
+Data platforms contain:
+- Customer data
+- Financial records
+- PII
+- Business-critical analytics
 
+Poor security leads to:
+- Data breaches
+- Compliance violations
+- Credential leaks
+- Unauthorized access
+- Lateral movement attacks
+
+---
+
+# Core Azure Security Architecture
+
+```text
+Microsoft Entra ID (Azure AD)
+            ↓
+Managed Identity / Service Principal
+            ↓
+RBAC Permissions
+            ↓
+Azure Resources
+    ├── ADLS
+    ├── Key Vault
+    ├── Databricks
+    ├── Synapse
+    └── SQL Database
+            ↓
+Unity Catalog / Table-Level Security
 ```
-Databricks Workspace → has a System-Assigned Managed Identity
-→ You grant that identity "Storage Blob Data Contributor" on ADLS
-→ Databricks reads/writes ADLS with no credentials in code
-```
-
-**Two types:**
-- **System-assigned** — tied to one resource, deleted when resource is deleted
-- **User-assigned** — standalone identity, can be assigned to multiple resources
 
 ---
 
-## RBAC Roles for Data Engineering
+# Microsoft Entra ID (Azure AD)
 
-| Role | Scope | Used For |
-|------|-------|----------|
-| Storage Blob Data Contributor | Storage Account | Read + write blobs |
-| Storage Blob Data Reader | Storage Account | Read-only access |
-| Key Vault Secrets User | Key Vault | Read secrets |
-| Databricks Contributor | Databricks Workspace | Deploy jobs via CI/CD |
-| Data Factory Contributor | ADF | Deploy pipelines via CI/CD |
+Identity provider for Azure.
+
+Handles:
+- Authentication
+- Authorization
+- User identities
+- Service identities
+- Groups
+- MFA policies
+
+Everything in Azure security starts with:
+```text
+Entra ID
+```
+
+---
+
+# What Is Managed Identity?
+
+Managed Identity is an Azure-managed service identity automatically created for Azure resources.
+
+Instead of storing:
+- Username
+- Password
+- Client secret
+
+Azure handles authentication automatically.
+
+---
+
+# Why Managed Identity?
+
+Benefits:
+- No secret rotation
+- No passwords in code
+- Automatic credential management
+- More secure
+- Better governance
+
+---
+
+# Managed Identity Flow
+
+```text
+Databricks Workspace
+        ↓
+Managed Identity
+        ↓
+RBAC Permission
+        ↓
+ADLS / Key Vault / Synapse
+```
+
+No secrets required.
+
+---
+
+# Types of Managed Identity
+
+| Type | Description |
+|---|---|
+| System-Assigned | Tied to a single Azure resource |
+| User-Assigned | Reusable standalone identity |
+
+---
+
+# System-Assigned Managed Identity
+
+Automatically created for a resource.
+
+Characteristics:
+- One-to-one relationship
+- Deleted with resource
+- Easy to manage
+
+Example:
+```text
+ADF Workspace → Managed Identity
+```
+
+---
+
+# User-Assigned Managed Identity
+
+Standalone reusable identity.
+
+Advantages:
+- Shared across resources
+- Centralized identity management
+- Easier enterprise governance
+
+Example:
+```text
+Single Identity
+    ↓
+ADF + Databricks + Synapse
+```
+
+---
+
+# Managed Identity vs Service Principal
+
+| Managed Identity | Service Principal |
+|---|---|
+| Azure-managed | User-managed |
+| No secret rotation | Requires secret/certificate rotation |
+| More secure | Higher operational overhead |
+| Preferred in Azure | Used for external/cross-tenant cases |
+
+---
+
+# When Service Principals Are Still Needed
+
+Use Service Principals when:
+- Cross-tenant access required
+- External applications connect
+- CI/CD outside Azure
+- Non-Azure systems authenticate
+
+Otherwise:
+```text
+Prefer Managed Identity
+```
+
+---
+
+# Role-Based Access Control (RBAC)
+
+RBAC controls:
+```text
+WHO can do WHAT on WHICH resource
+```
+
+---
+
+# RBAC Scope Hierarchy
+
+```text
+Management Group
+    ↓
+Subscription
+    ↓
+Resource Group
+    ↓
+Resource
+```
+
+Permissions inherit downward.
+
+---
+
+# Common RBAC Roles in Data Engineering
+
+| Role | Usage |
+|---|---|
+| Storage Blob Data Reader | Read-only access to ADLS |
+| Storage Blob Data Contributor | Read/write ADLS access |
+| Key Vault Secrets User | Read secrets |
+| Contributor | Manage resources |
+| Reader | Read resource metadata |
+| Synapse Contributor | Manage Synapse |
+| Data Factory Contributor | Manage ADF |
+| Databricks Contributor | Manage Databricks |
+
+---
+
+# RBAC Best Practice
+
+Always follow:
+```text
+Least Privilege Principle
+```
+
+Give only required access.
+
+Avoid:
+```text
+Owner
+Contributor at Subscription Level
+```
+
+unless absolutely necessary.
+
+---
+
+# Example RBAC Assignment
 
 ```bash
-# Assign role via Azure CLI
 az role assignment create \
     --assignee <managed-identity-object-id> \
     --role "Storage Blob Data Contributor" \
@@ -44,21 +261,69 @@ az role assignment create \
 
 ---
 
-## Azure Key Vault — Storing Secrets
+# Common RBAC Design Pattern
 
-Key Vault is where ALL secrets live. Managed identities read from Key Vault — nothing is hardcoded.
-
-```python
-# In Databricks — read secret from Key Vault-backed secret scope
-client_id = dbutils.secrets.get(scope="kv-scope", key="sp-client-id")
-client_secret = dbutils.secrets.get(scope="kv-scope", key="sp-client-secret")
-
-# Secret never appears in logs or notebook output
+```text
+ADF Managed Identity
+        ↓
+Storage Blob Data Contributor
+        ↓
+ADLS Bronze Container
 ```
 
-Set up the secret scope once:
+---
+
+# Azure Key Vault
+
+Azure Key Vault securely stores:
+- Passwords
+- Secrets
+- Certificates
+- Keys
+- Connection strings
+
+---
+
+# Why Key Vault?
+
+Never store secrets in:
+- Notebooks
+- Pipelines
+- Git repositories
+- Config files
+
+Use:
+```text
+Key Vault
+```
+
+instead.
+
+---
+
+# Key Vault Integration with Databricks
+
+```python
+client_id = dbutils.secrets.get(
+    scope="kv-scope",
+    key="sp-client-id"
+)
+
+client_secret = dbutils.secrets.get(
+    scope="kv-scope",
+    key="sp-client-secret"
+)
+```
+
+Secrets never appear in logs/output.
+
+---
+
+# Databricks Secret Scope
+
 ```bash
-databricks secrets create-scope --scope kv-scope \
+databricks secrets create-scope \
+    --scope kv-scope \
     --scope-backend-type AZURE_KEYVAULT \
     --resource-id /subscriptions/.../vaults/mykeyvault \
     --dns-name https://mykeyvault.vault.azure.net/
@@ -66,43 +331,409 @@ databricks secrets create-scope --scope kv-scope \
 
 ---
 
-## Unity Catalog — Storage Credentials & External Locations
+# Common Key Vault Problem
 
-With Unity Catalog, access to ADLS is defined at the metastore level:
+## Error
+```text
+Forbidden
+Access Denied
+```
+
+## Root Cause
+Missing RBAC or access policy.
+
+## Solution
+Grant:
+```text
+Key Vault Secrets User
+```
+
+role to Managed Identity.
+
+---
+
+# Security in Azure Data Factory
+
+ADF uses Managed Identity for:
+- ADLS access
+- Key Vault access
+- SQL access
+
+Best practice:
+```text
+ADF Linked Service → Managed Identity
+```
+
+instead of:
+```text
+Username + Password
+```
+
+---
+
+# Security in ADLS Gen2
+
+Security layers:
+- RBAC
+- ACLs
+- Firewall
+- Private Endpoint
+- Encryption
+
+---
+
+# RBAC vs ACLs
+
+| RBAC | ACL |
+|---|---|
+| Resource-level access | File/folder-level access |
+| Managed via Azure | POSIX-style permissions |
+| Coarse-grained | Fine-grained |
+
+---
+
+# ACL Example
+
+```text
+rwx
+```
+
+Permissions:
+- Read
+- Write
+- Execute
+
+Applied to:
+- Folders
+- Files
+
+---
+
+# Encryption in Azure
+
+Azure supports:
+- Encryption at rest
+- Encryption in transit
+
+Default encryption:
+```text
+AES-256
+```
+
+---
+
+# Customer Managed Keys (CMK)
+
+By default:
+```text
+Microsoft-managed keys
+```
+
+For higher security:
+```text
+Customer-managed keys via Key Vault
+```
+
+Used in:
+- Banking
+- Healthcare
+- Highly regulated industries
+
+---
+
+# Network-Level Security Controls
+
+Security is not only identity-based.
+
+Also use:
+- Private Endpoints
+- Firewalls
+- VNets
+- NSGs
+
+---
+
+# Private Endpoints
+
+Creates private IP access to:
+- ADLS
+- Key Vault
+- Synapse
+- SQL DB
+
+Avoids public internet exposure.
+
+---
+
+# Storage Firewall
+
+Restrict storage access to:
+- Approved VNets
+- Approved IPs
+- Private Endpoints
+
+Example:
+```text
+Default Action = Deny
+```
+
+---
+
+# Unity Catalog Security
+
+Unity Catalog provides:
+- Central governance
+- Fine-grained permissions
+- Data lineage
+- Auditing
+
+---
+
+# Unity Catalog Hierarchy
+
+```text
+Metastore
+    ↓
+Catalog
+    ↓
+Schema
+    ↓
+Table
+    ↓
+Column
+```
+
+---
+
+# Storage Credentials in Unity Catalog
 
 ```sql
--- Create a storage credential (references a managed identity or service principal)
 CREATE STORAGE CREDENTIAL adls_credential
-    WITH AZURE_MANAGED_IDENTITY = '/subscriptions/.../managedIdentities/uc-identity';
+WITH AZURE_MANAGED_IDENTITY =
+'/subscriptions/.../managedIdentities/uc-identity';
+```
 
--- Create an external location that uses the credential
+---
+
+# External Locations
+
+```sql
 CREATE EXTERNAL LOCATION bronze_location
-    URL 'abfss://bronze@mystorageaccount.dfs.core.windows.net/'
-    WITH (STORAGE CREDENTIAL adls_credential);
-
--- Now tables can be created on this location
-CREATE TABLE catalog.schema.orders
-    LOCATION 'abfss://bronze@mystorageaccount.dfs.core.windows.net/orders/';
+URL 'abfss://bronze@mystorageaccount.dfs.core.windows.net/'
+WITH (STORAGE CREDENTIAL adls_credential);
 ```
 
 ---
 
-## Security Hierarchy
+# Row-Level Security
 
+Restrict rows dynamically.
+
+Example:
+```text
+India users → only India records
+US users → only US records
 ```
-Azure Active Directory / Entra ID
-    └── Managed Identities / Service Principals
-        └── RBAC on Azure Resources (Storage, Key Vault, etc.)
-            └── Databricks Unity Catalog
-                └── Catalog / Schema / Table / Column level permissions
-                    └── Row-level security via dynamic views
+
+Implemented using:
+- Dynamic views
+- SQL filtering
+
+---
+
+# Column-Level Security
+
+Hide sensitive columns:
+- SSN
+- Salary
+- Credit card number
+
+Example:
+```text
+Mask salary column for analysts
 ```
 
 ---
 
-## What to Avoid
+# Data Masking
 
-- Never use storage account keys in notebooks or ADF linked services
-- Never commit `.env` files with client secrets to Git
-- Never use SAS tokens long-term — they don't rotate automatically
-- Don't give `Owner` or `Contributor` at subscription level — use least privilege
+Protect sensitive information.
+
+Techniques:
+- Partial masking
+- Hashing
+- Tokenization
+
+---
+
+# Auditing & Monitoring
+
+Monitor:
+- Login attempts
+- Data access
+- Permission changes
+- Failed authentications
+
+---
+
+# Azure Monitor & Log Analytics
+
+Used for:
+- Security auditing
+- Alerting
+- Log retention
+- Threat investigation
+
+---
+
+# Microsoft Defender for Cloud
+
+Provides:
+- Threat detection
+- Security recommendations
+- Vulnerability assessment
+- Compliance monitoring
+
+---
+
+# Common Security Problems
+
+# 1. Hardcoded Secrets
+
+## Bad Practice
+
+```python
+password = "admin123"
+```
+
+## Correct Approach
+
+```text
+Key Vault + Managed Identity
+```
+
+---
+
+# 2. Over-Permissioned Access
+
+## Problem
+Everyone has Contributor access.
+
+## Risk
+Accidental deletion or security breach.
+
+## Fix
+Use least privilege RBAC.
+
+---
+
+# 3. Public Storage Accounts
+
+## Problem
+ADLS exposed publicly.
+
+## Fix
+- Disable public access
+- Use Private Endpoints
+- Enable firewall restrictions
+
+---
+
+# 4. Expired Service Principal Secrets
+
+## Symptoms
+Pipelines suddenly fail.
+
+## Fix
+- Rotate secrets
+- Prefer Managed Identity
+
+---
+
+# 5. Missing Unity Catalog Governance
+
+## Problem
+No centralized access control.
+
+## Fix
+Implement:
+- Unity Catalog
+- External Locations
+- Storage Credentials
+
+---
+
+# Common Enterprise Security Pattern
+
+```text
+Entra ID
+    ↓
+Managed Identity
+    ↓
+RBAC Permissions
+    ↓
+Private Endpoint
+    ↓
+ADLS / Key Vault
+    ↓
+Unity Catalog Governance
+```
+
+---
+
+# Security Best Practices
+
+- Use Managed Identity whenever possible
+- Avoid storage account keys
+- Store secrets only in Key Vault
+- Follow least privilege RBAC
+- Disable public network access
+- Use Private Endpoints
+- Enable auditing and monitoring
+- Use Unity Catalog for governance
+- Rotate Service Principal secrets regularly
+- Use Customer Managed Keys for sensitive workloads
+
+---
+
+# Common Interview Questions
+
+## Difference Between Managed Identity and Service Principal
+
+| Managed Identity | Service Principal |
+|---|---|
+| Azure-managed | User-managed |
+| No secrets | Uses secrets/certificates |
+| Preferred in Azure | Needed for external access |
+
+---
+
+## Difference Between RBAC and ACLs
+
+| RBAC | ACL |
+|---|---|
+| Resource-level | File/folder-level |
+| Azure IAM-based | POSIX-style |
+| Coarse-grained | Fine-grained |
+
+---
+
+## Why Is Managed Identity Better?
+
+Because:
+- No credential rotation
+- No secret exposure
+- Lower operational overhead
+- Better security posture
+
+---
+
+# Key Takeaways
+
+- Managed Identity is the preferred Azure authentication mechanism.
+- RBAC controls resource-level permissions.
+- Key Vault securely stores secrets and keys.
+- Private Endpoints secure network access.
+- Unity Catalog enables centralized governance.
+- Least privilege access is critical.
+- Most enterprise security issues come from over-permissioning or exposed secrets.

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 2
 ---
 
 # Spark Architecture
@@ -25,6 +25,10 @@ Driver Program
 ```
 
 ---
+
+## Architecture
+
+![Spark Architecture](/img/spark/spark_architecture.webp)
 
 ## Key Terms
 
